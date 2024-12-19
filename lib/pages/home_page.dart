@@ -1,5 +1,6 @@
 import 'package:etagas/enums/fuel.dart';
 import 'package:etagas/services/calculator_service.dart';
+import 'package:etagas/utils/constants.dart';
 import 'package:etagas/widgets/fuel_price_input.dart';
 import 'package:etagas/widgets/fuel_chip.dart';
 import 'package:flutter/material.dart';
@@ -14,6 +15,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   late final TextEditingController _gasolineController;
   late final TextEditingController _ethanolController;
+  late final FocusNode _gasolineFocusNode;
+  late final FocusNode _ethanolFocusNode;
   late Fuel? _bestValue;
   late final CalculatorService _service;
 
@@ -21,8 +24,12 @@ class _HomePageState extends State<HomePage> {
   void initState() {
     _gasolineController = TextEditingController()..addListener(_calculate);
     _ethanolController = TextEditingController()..addListener(_calculate);
+    _gasolineFocusNode = FocusNode();
+    _ethanolFocusNode = FocusNode();
     _service = CalculatorService();
     _bestValue = null;
+    _gasolineFocusNode.requestFocus();
+
     super.initState();
   }
 
@@ -47,9 +54,12 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildResult() {
-    final gasolinePrice = double.parse(_gasolineController.text);
-    final ethanolPrice = double.parse(_ethanolController.text);
-    final gasolineConvertedPrice = gasolinePrice * 0.75;
+    final gasolinePrice = double.tryParse(_gasolineController.text);
+    final ethanolPrice = double.tryParse(_ethanolController.text);
+    if (gasolinePrice == null || ethanolPrice == null) {
+      return Container();
+    }
+    final gasolineConvertedPrice = gasolinePrice * kFuelFactor;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -136,15 +146,18 @@ class _HomePageState extends State<HomePage> {
             children: [
               Expanded(
                 child: FuelPriceInput(
+                  focusNode: _gasolineFocusNode,
                   controller: _gasolineController,
+                  onSubmitted: () => _ethanolFocusNode.requestFocus(),
                   label: 'Gasolina',
                 ),
               ),
               const SizedBox(width: 16),
               Expanded(
                 child: FuelPriceInput(
-                  label: 'Etanol',
+                  focusNode: _ethanolFocusNode,
                   controller: _ethanolController,
+                  label: 'Etanol',
                 ),
               ),
             ],

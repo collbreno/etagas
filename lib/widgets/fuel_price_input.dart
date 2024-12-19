@@ -1,12 +1,17 @@
+import 'package:etagas/utils/input_formatters.dart';
 import 'package:flutter/material.dart';
 
 class FuelPriceInput extends StatelessWidget {
   final String label;
   final TextEditingController controller;
+  final VoidCallback? onSubmitted;
+  final FocusNode focusNode;
   const FuelPriceInput({
     super.key,
     required this.label,
     required this.controller,
+    this.onSubmitted,
+    required this.focusNode,
   });
 
   @override
@@ -14,6 +19,8 @@ class FuelPriceInput extends StatelessWidget {
     return Padding(
       padding: const EdgeInsets.only(top: 8.0),
       child: TextFormField(
+        focusNode: focusNode,
+        inputFormatters: [InputFormatters.priceFormatter],
         keyboardType: const TextInputType.numberWithOptions(
           signed: false,
           decimal: false,
@@ -26,6 +33,9 @@ class FuelPriceInput extends StatelessWidget {
           labelText: label,
         ),
         controller: controller,
+        onFieldSubmitted: (_) {
+          onSubmitted?.call();
+        },
       ),
     );
   }
